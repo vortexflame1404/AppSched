@@ -3,15 +3,21 @@ import { StyleSheet, View } from 'react-native';
 import {
   Button,
   Divider,
+  Input,
   Layout,
   Text,
   TopNavigation,
 } from '@ui-kitten/components';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '../navigations';
+import Toast from 'react-native-simple-toast';
+import { DismissKeyboard } from '../components/DismissKeyboard';
 
 const Profile = (props) => {
   const { state, authContext } = React.useContext(AuthContext);
+  const [email, setEmail] = React.useState(state.userDetails.email);
+  const [name, setName] = React.useState(state.userDetails.name);
+  const [password, setPassword] = React.useState('');
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -19,7 +25,36 @@ const Profile = (props) => {
       <Divider />
       <Layout style={styling.container}>
         <Text category="h1">Profile</Text>
-        <Text>{state.userId}</Text>
+        <DismissKeyboard>
+          <Input
+            label="NAME"
+            value={name}
+            onChangeText={(text) => setName(text)}
+          />
+        </DismissKeyboard>
+        <DismissKeyboard>
+          <Input
+            label="EMAIL"
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+          />
+        </DismissKeyboard>
+        <DismissKeyboard>
+          <Input
+            label="PASSWORD"
+            secureTextEntry={true}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+          />
+        </DismissKeyboard>
+        <Button
+          onPress={() => {
+            console.log(typeof state.userDetails);
+            console.log(state.userDetails.name);
+            Toast.show('save modified', Toast.SHORT);
+          }}>
+          SAVE INFO
+        </Button>
         <Button onPress={() => authContext.signOut({ id: state.userId })}>
           SIGN OUT
         </Button>

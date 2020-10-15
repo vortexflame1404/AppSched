@@ -11,18 +11,20 @@ export const AuthContext = React.createContext(null);
 
 const AppNavigator = () => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  console.log('in AppNavigator');
 
   React.useEffect(() => {
-    // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       let token, id, user;
-
       try {
         token = await AsyncStorage.getItem('userToken');
         id = await AsyncStorage.getItem('userId');
-        user = JSON.stringify(await AsyncStorage.getItem('userDetails'));
-        if (id || token) throw new Error('token or id is null');
-        const response = await axios.get(`users/${id}`, {
+        user = JSON.parse(await AsyncStorage.getItem('userDetails'));
+        console.log('in reducer print token', token);
+        if (id || token) {
+          throw new Error('token or id is null');
+        }
+        const response = axios.get(`users/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 200) {
@@ -31,15 +33,11 @@ const AppNavigator = () => {
             payload: { user: user, id: id, token: token },
           });
         }
+        console.log(token, id);
       } catch (e) {
         // Restoring token failed
-        dispatch({ type: 'ERROR', payload: { error: 'signed out' } });
+        dispatch({ type: 'ERROR', payload: { error: "can't restore token" } });
       }
-
-      // After restoring token, we may need to validate it in production apps
-
-      // This will switch to the App screen or Auth screen and this loading
-      // screen will be unmounted and thrown away.
     };
 
     bootstrapAsync();

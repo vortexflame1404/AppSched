@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
   Button,
   Divider,
@@ -40,14 +40,12 @@ const LoginScreen = ({ route, navigation }) => {
           />
         </DismissKeyboard>
         <Divider style={{ margin: 10 }} />
-        <DismissKeyboard>
-          <Input
-            secureTextEntry={true}
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-            placeholder="PASSWORD"
-          />
-        </DismissKeyboard>
+        <Input
+          secureTextEntry={true}
+          value={password}
+          onChangeText={(text) => setPassword(text)}
+          placeholder="PASSWORD"
+        />
         <Divider style={{ margin: 10 }} />
         <Button
           onPress={() => {

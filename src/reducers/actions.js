@@ -50,12 +50,12 @@ export const signInUser = async (data, dispatch) => {
     };
 
     const response = await axios(config);
-    const user = JSON.stringify(response.data.user);
+    const user = response.data.user;
     const id = response.headers.location;
     console.log('headers', response.headers);
     console.log('token', response.data.token);
     console.log('user ', user);
-    await AsyncStorage.setItem('userDetails', user);
+    await AsyncStorage.setItem('userDetails', JSON.stringify(user));
     await AsyncStorage.setItem('userId', id);
     await AsyncStorage.setItem('userToken', response.data.token);
     dispatch({
@@ -78,6 +78,7 @@ export const signUpUser = async (data, dispatch) => {
   // After getting token, we need to persist the token using `AsyncStorage`
   // In the example, we'll use a dummy token
   try {
+    console.log(data);
     const response = await axios.post('users/', {
       name: data.name,
       email: data.email,
@@ -85,10 +86,11 @@ export const signUpUser = async (data, dispatch) => {
       _host: data.host,
     });
     const user = JSON.stringify(response.data.user);
-    const id = response.headers.Location;
+    const id = response.headers.location;
     await AsyncStorage.setItem('userDetails', user);
     await AsyncStorage.setItem('userId', id);
     await AsyncStorage.setItem('userToken', response.data.token);
+    console.log(response.status);
     if (response.status === 201) {
       dispatch({
         type: 'SIGN_IN',

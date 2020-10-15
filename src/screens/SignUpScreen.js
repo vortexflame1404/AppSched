@@ -5,7 +5,8 @@ import {
   Input,
   Layout,
   Radio,
-  RadioGroup, Spinner,
+  RadioGroup,
+  Spinner,
   Text,
 } from '@ui-kitten/components';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +17,7 @@ import { DismissKeyboard } from '../components/DismissKeyboard';
 const LoadingIndicator = (props) => (
   <View
     style={[props.style, { justifyContent: 'center', alignItems: 'center' }]}>
-    <Spinner size="small"/>
+    <Spinner size="small" />
   </View>
 );
 
@@ -24,7 +25,7 @@ const SignUpScreen = ({ route, navigation }) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [selectedIndex, setSelectedIndex] = React.useState();
   const { state, authContext } = useContext(AuthContext);
 
   return (
@@ -36,14 +37,14 @@ const SignUpScreen = ({ route, navigation }) => {
         <DismissKeyboard>
           <Input
             value={name}
-            onchangText={(text) => setName(text)}
+            onChangeText={(text) => setName(text)}
             placeholder="NAME"
           />
         </DismissKeyboard>
         <DismissKeyboard>
           <Input
             value={email}
-            onchangText={(text) => setEmail(text)}
+            onChangeText={(text) => setEmail(text)}
             placeholder="EMAIL"
           />
         </DismissKeyboard>
@@ -64,10 +65,10 @@ const SignUpScreen = ({ route, navigation }) => {
         <Button
           onPress={() => {
             const host = selectedIndex === 0 ? null : true;
-            authContext.signUp({ email, password, host });
+            authContext.signUp({ name, email, password, host });
           }}
           accessoryLeft={!state.userToken ? LoadingIndicator : null}>
-          {!state.userToken ? 'LOADING' : 'SIGN IN'}
+          SIGN UP
         </Button>
         <NavLink
           routeName="Login"
