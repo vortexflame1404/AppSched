@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
 import {
   Button,
   Text,
@@ -17,56 +17,55 @@ import { AuthContext } from '../navigations';
 
 const SearchScreen = ({ route, navigation }) => {
   const [searchInput, setSearchInput] = React.useState('');
-  const [searchResults, setSearchResults] = React.useState();
+  const [searchResults, setSearchResults] = React.useState([]);
   const { state } = React.useContext(AuthContext);
+  const id = state.userId;
 
-  const handleSearch = async (id, token, searchKey) => {
+  const handleSearch = async (query) => {
     try {
       const response = await axios.get(`users/${id}/search`, {
         params: {
-          name: searchKey,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
+          name: query,
         },
       });
-      console.log(response.data);
       setSearchResults(response.data);
     } catch (e) {
-      console.error('error in host search');
+      console.log('error in host search', e.message);
     }
   };
 
   const renderItem = ({ item, index }) => (
     <ListItem
       title={`${item.name} `}
-      description={`${item.email} ${index + 1}`}
-      onPress={() => navigation.navigate('ProfSched')}
+      description={`${item.email}`}
+      onPress={() => navigation.navigate('ProfSched', item)}
     />
   );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <TopNavigation title="Search" alignment="center" />
-      <Divider style={{ borderColor: '#00008b' }} />
+      <TopNavigation title="Search" alignment="center"/>
+      <Divider style={{ borderColor: '#00008b' }}/>
       <Layout style={styling.container}>
         <Text category="h3">Search Screen</Text>
+        <Divider style={{ borderColor: '#00008b', height: 30 }}/>
         <Input
           value={searchInput}
           onChangeText={(text) => setSearchInput(text)}
           placeholder="SEARCH"
         />
-        <View style={{ alignItems: 'center', flex: 1 }}>
+        <View style={{ alignItems: 'center', flex: 1, padding: 10 }}>
           <Button
             onPress={() => {
-              handleSearch(state.userId, state.userToken, searchInput);
+              Keyboard.dismiss();
+              handleSearch(searchInput);
             }}>
             SEARCH
           </Button>
         </View>
         {searchResults ? (
           <List
-            style={{ maxHeight: 350 }}
+            style={{ maxHeight: 300 }}
             data={searchResults}
             ItemSeparatorComponent={Divider}
             renderItem={renderItem}

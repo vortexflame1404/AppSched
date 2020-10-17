@@ -13,12 +13,6 @@ import NavLink from '../components/NavLink';
 import { AuthContext } from '../navigations';
 import { DismissKeyboard } from '../components/DismissKeyboard';
 
-const LoadingIndicator = (props) => (
-  <View style={props.style}>
-    <Spinner size="large" />
-  </View>
-);
-
 const LoginScreen = ({ route, navigation }) => {
   const { state, authContext } = React.useContext(AuthContext);
   const [email, setEmail] = useState('student6@example.org');
@@ -28,8 +22,10 @@ const LoginScreen = ({ route, navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <Layout style={styling.form}>
         <Text category="h1">APP SCHED</Text>
-        {state.errorMessage ? (
-          <Text status="danger">{state.errorMessage}</Text>
+        {typeof state.errorMessage === 'string' ? (
+          <Text category="h4" status="danger">
+            {state.errorMessage}
+          </Text>
         ) : null}
         <Divider style={{ margin: 10 }} />
         <DismissKeyboard>
@@ -54,7 +50,6 @@ const LoginScreen = ({ route, navigation }) => {
           }}>
           SIGN IN
         </Button>
-        {!state.userToken ? null : <Spinner size="large" />}
         <Divider style={{ margin: 20 }} />
         <NavLink
           routeName="Register"

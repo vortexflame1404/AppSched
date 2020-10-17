@@ -14,27 +14,27 @@ import { parseISO, format, add } from 'date-fns';
 import { Divider } from '@ui-kitten/components';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const BackIcon = (props) => <Icon {...props} name="arrow-back"/>;
+const BackIcon = (props) => <Icon {...props} name="arrow-back" />;
 
 const AppointmentDetailsScreen = ({ route, navigation }) => {
   // get params
-  let { id, startDate, endDate, description } = route.params;
-  startDate = parseISO(startDate);
-  endDate = parseISO(endDate);
-  let dateFormat = 'HH:mm dd/MM';
+  const item = route.params;
+  let startDate = parseISO(item.startTime);
+  let endDate = parseISO(item.endTime);
+  const dateFormat = 'HH:mm dd/MM';
 
   const [scheduleTime, setScheduleTime] = useState(
     format(startDate, dateFormat) + ' to ' + format(endDate, dateFormat),
   );
   const [selectedDate, setSelectedDate] = useState('');
   const [title, setTitle] = useState('sample title'); // replace w/ props
-  const [detail, setDetail] = useState(JSON.stringify(description)); // replace w/ props
+  const [detail, setDetail] = useState(item.details); // replace w/ props
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const navigateBack = () => navigation.goBack();
 
   const BackAction = (props) => (
-    <TopNavigationAction icon={BackIcon} onPress={navigateBack}/>
+    <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
   );
 
   const showDatePicker = () => {
@@ -65,8 +65,8 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
         accessoryLeft={BackAction}
       />
       <Layout style={styling.form}>
-        <Input value={title} onChangeText={(input) => setTitle(input)}/>
-        <Text style={{ fontSize: 20 }}>Sample Name</Text>
+        <Input value={title} onChangeText={(input) => setTitle(input)} />
+        <Text category={'h2'}>{item._host.name}</Text>
         <Button
           onPress={() => showDatePicker()}
           style={{ margin: 2 }}
@@ -91,8 +91,16 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
             flexDirection: 'row',
             justifyContent: 'center',
           }}>
-          <Button onPress={() => console.log('save pressed')}>SAVE</Button>
-          <Button onPress={() => console.log('cancel pressed')}>CANCEL</Button>
+          <Button
+            style={{ margin: 20 }}
+            onPress={() => console.log('save pressed')}>
+            SAVE
+          </Button>
+          <Button
+            style={{ margin: 20 }}
+            onPress={() => console.log('cancel pressed')}>
+            DELETE
+          </Button>
         </Layout>
       </Layout>
     </SafeAreaView>

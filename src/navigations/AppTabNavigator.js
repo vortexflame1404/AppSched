@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HomeStackNavigator from './HomeStackNavigator';
 import SearchStackNavigator from './SearchStackNavigator';
 import Profile from '../screens/Profile';
@@ -10,8 +8,6 @@ import {
   BottomNavigationTab,
   Icon,
 } from '@ui-kitten/components';
-import HomeScreen from '../screens/HomeScreen';
-import SearchScreen from '../screens/SearchScreen';
 import { AuthContext } from './index';
 
 const HomeIcon = (props) => <Icon {...props} name="home-outline" />;

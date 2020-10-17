@@ -17,7 +17,18 @@ export const authReducer = (prevState, action) => {
         isSignOut: false,
         userToken: action.payload.token,
         userDetails: action.payload.user,
+        errorMessage: null,
         userId: action.payload.id,
+      };
+    case 'HOST_SIGN_IN':
+      return {
+        ...prevState,
+        isSignOut: false,
+        userToken: action.payload.token,
+        userDetails: action.payload.user,
+        errorMessage: null,
+        userId: action.payload.id,
+        isHost: true,
       };
     case 'SIGN_OUT':
       return {
@@ -43,6 +54,7 @@ export const initialState = {
   isSignOut: false,
   userToken: null,
   userDetails: null,
+  isHost: false,
   userId: null,
   errorMessage: null,
 };

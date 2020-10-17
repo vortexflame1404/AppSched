@@ -1,134 +1,93 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import WeekView from 'react-native-week-view';
-import { Divider, Layout, TopNavigation } from '@ui-kitten/components';
-import { add } from 'date-fns';
+import {
+  Divider,
+  Layout,
+  List,
+  ListItem,
+  Text,
+  TopNavigation,
+} from '@ui-kitten/components';
+import { add, parseJSON, parseISO, format } from 'date-fns';
 import Toast from 'react-native-simple-toast';
+import axios from 'axios';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { color } from 'react-native-reanimated';
-
-const generateDates = (hours, minutes) => {
-  const date = new Date();
-  date.setHours(date.getHours() + hours);
-  if (minutes != null) {
-    date.setMinutes(minutes);
-  }
-  return date;
-};
-
-const sampleEvents = [
-  {
-    id: 1,
-    description: 'Event 1',
-    startDate: generateDates(0),
-    endDate: generateDates(1),
-    color: 'blue',
-  },
-  {
-    id: 2,
-    description: 'Event 2',
-    startDate: generateDates(3),
-    endDate: generateDates(4),
-    color: 'red',
-  },
-  {
-    id: 4,
-    description: 'Event 3',
-    startDate: generateDates(-4),
-    endDate: generateDates(-3),
-    color: 'green',
-  },
-];
+import { AuthContext } from '../navigations';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 
 const HomeScreen = ({ route, navigation }) => {
-  const now = new Date();
-  const hourAndMinute = now.getHours() + ':' + now.getMinutes();
-  const date =
-    now.getDate() + '/' + (now.getMonth() + 1) + '/' + now.getFullYear();
+  const [fetchData, setFetchData] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState('');
+  const { state } = React.useContext(AuthContext);
+  const id = state.userId;
+  const dateFormat = 'HH:mm dd/MM';
 
-  //example for week view
-  const events = sampleEvents;
-  const selectedDate = new Date();
+  React.useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`users/${id}/appointments`);
+        setFetchData(response.data);
+        console.log(response.data);
+      } catch (e) {
+        console.log('in fetchAppointments, Homescreen', e.message);
+        setIsError("can't get appointments");
+      }
+      setIsLoading(false);
+    };
+    fetchAppointments();
+  }, [id]);
 
-  const onEventPress = ({ id, color, startDate, endDate, description }) => {
-    navigation.navigate('Detail', {
-      id: id,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      description: description,
-    });
-  };
-
-  const onGridClick = (event, startHour) => {
-    console.log(`start hour: ${startHour}`);
-    console.log(typeof startHour);
-    if (startHour > 16 || startHour < 9) {
-      Toast.show('Outside of working hour', Toast.SHORT, ['UIAlertController']);
-      return;
-    }
-    console.log('here');
-  };
-
-  const onNextWeek = (event) => {
-    console.log(event);
-    console.log(add(new Date(), { days: 1 }));
-  };
+  const renderItem = ({ item, index }) => (
+    <ListItem
+      title={`${item.title} ${index}`}
+      description={`with ${item._host.name} from ${format(
+        parseISO(item.startTime),
+        dateFormat,
+      )} to ${format(parseISO(item.endTime), dateFormat)}`}
+      onPress={() => navigation.navigate('Detail', item)}
+    />
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <TopNavigation title="Home" alignment="center"/>
-      <Divider/>
+      <TopNavigation title="Home" alignment="center" />
+      <Divider />
       <Layout style={styling.container}>
-        <WeekView
-          events={events}
-          selectedDate={selectedDate}
-          numberOfDays={5}
-          hourTextStyle={{ color: '#000000' }}
-          onEventPress={onEventPress}
-          onGridClick={onGridClick}
-          headerStyle={style.headerStyle}
-          formatDateHeader="MMM D"
-          hoursInDisplay={6}
-          startHour={9}
-          onSwipeNext={onNextWeek}
-        />
+        <View style={{ alignItems: 'center' }}>
+          <Text category={'h1'}>MY APPOINTMENTS</Text>
+        </View>
+        <Divider style={{ height: 30 }} />
+        {isLoading ? <LoadingIndicator /> : null}
+        {isError.length === 0 ? null : (
+          <Text category={'h6'} status={'danger'}>
+            {isError}
+          </Text>
+        )}
+        {fetchData.length === 0 && !isLoading ? (
+          <Text category={'h5'}>No appointments</Text>
+        ) : (
+          <List
+            style={{ maxHeight: 300 }}
+            data={fetchData}
+            ItemSeparatorComponent={Divider}
+            renderItem={renderItem}
+          />
+        )}
       </Layout>
     </SafeAreaView>
   );
 };
 
-const style = StyleSheet.create({
-  headerStyle: {
-    backgroundColor: '#3366FF',
-    color: '#fff',
-    borderColor: '#fff',
-  },
-  hourText: {
-    color: 'white',
-  },
-});
-
 const styling = StyleSheet.create({
   container: {
     flex: 1,
-    alignSelf: 'baseline',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  form: {
-    flex: 1,
-    justifyContent: 'center',
-    width: '80%',
-  },
-  // set width to fit text
-  buttonOuterLayout: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonLayout: {
-    marginBottom: 10,
+    alignItems: 'stretch',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
   },
 });
 

@@ -13,30 +13,36 @@ const AppNavigator = () => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   console.log('in AppNavigator');
 
+  axios.defaults.baseURL = 'http://192.168.1.120:3000/';
+  axios.defaults.timeout = 3000;
+  axios.defaults.headers.post['Content-Type'] = 'application/json';
+  if (typeof state.userToken === 'string')
+    axios.defaults.headers.common['Authorization'] = state.userToken;
+
   React.useEffect(() => {
     const bootstrapAsync = async () => {
-      let token, id, user;
       try {
-        token = await AsyncStorage.getItem('userToken');
-        id = await AsyncStorage.getItem('userId');
-        user = JSON.parse(await AsyncStorage.getItem('userDetails'));
-        console.log('in reducer print token', token);
-        if (id || token) {
-          throw new Error('token or id is null');
-        }
+        const token = await AsyncStorage.getItem('userToken');
+        const id = await AsyncStorage.getItem('userId');
+        const userJSON = await AsyncStorage.getItem('userDetails');
+        const user = userJSON === null ? null : JSON.parse(userJSON);
         const response = axios.get(`users/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (response.status === 200) {
-          dispatch({
-            type: 'RESTORE_TOKEN',
-            payload: { user: user, id: id, token: token },
-          });
+        if (response.status >= 400) {
+          throw new Error('restore token failed');
         }
-        console.log(token, id);
+        dispatch({
+          type: 'RESTORE_TOKEN',
+          payload: { token: token, user: user, id: id },
+        });
+        console.log('restore token from async storage');
       } catch (e) {
-        // Restoring token failed
-        dispatch({ type: 'ERROR', payload: { error: "can't restore token" } });
+        console.log('error retrieving token', e.message);
+        dispatch({
+          type: 'ERROR',
+          payload: { error: 'error retrieving token' },
+        });
       }
     };
 

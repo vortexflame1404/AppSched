@@ -17,7 +17,7 @@ import { DismissKeyboard } from '../components/DismissKeyboard';
 const LoadingIndicator = (props) => (
   <View
     style={[props.style, { justifyContent: 'center', alignItems: 'center' }]}>
-    <Spinner size="small" />
+    <Spinner size={'medium'} />
   </View>
 );
 
