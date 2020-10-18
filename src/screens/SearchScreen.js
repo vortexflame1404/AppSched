@@ -31,6 +31,7 @@ const SearchScreen = ({ route, navigation }) => {
       setSearchResults(response.data);
     } catch (e) {
       console.log('error in host search', e.message);
+      setSearchResults([]);
     }
   };
 
