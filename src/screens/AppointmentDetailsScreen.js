@@ -5,57 +5,118 @@ import {
   Input,
   Layout,
   Text,
+  Toggle,
   TopNavigation,
   TopNavigationAction,
 } from '@ui-kitten/components';
 import { StyleSheet, View } from 'react-native';
-import DateTimePicker from 'react-native-modal-datetime-picker';
-import { parseISO, format, add } from 'date-fns';
+import Toast from 'react-native-simple-toast';
+import { parseISO, format, addHours, setHours } from 'date-fns';
 import { Divider } from '@ui-kitten/components';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AuthContext } from '../navigations';
+import axios from 'axios';
 
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />;
 
 const AppointmentDetailsScreen = ({ route, navigation }) => {
+  /////////////////////////////////////////
+  // appointment example
+  const example = {
+    __v: 0,
+    _guest: '5f86e6cca23f7839288bec74',
+    _host: { _id: '5f87f621ac62552acc2240c9', name: 'Office 10' },
+    _id: '5f8ac358cf2f2f233492fb2a',
+    details: 'no details required',
+    endTime: '2020-10-16T08:44:55.254Z',
+    id: '5f8ac358cf2f2f233492fb2a',
+    isApproved: false,
+    startTime: '2020-10-16T07:44:55.254Z',
+    title: 'Meeting 1',
+  };
+  ///////////////////////////////////
   // get params
-  const item = route.params;
-  let startDate = parseISO(item.startTime);
-  let endDate = parseISO(item.endTime);
+  const appointment = route.params.item;
+  const [startDate, setStartDate] = React.useState(
+    parseISO(appointment.startTime),
+  );
+  let endDate = parseISO(appointment.endTime);
   const dateFormat = 'HH:mm dd/MM';
 
-  const [scheduleTime, setScheduleTime] = useState(
-    format(startDate, dateFormat) + ' to ' + format(endDate, dateFormat),
-  );
-  const [selectedDate, setSelectedDate] = useState('');
-  const [title, setTitle] = useState('sample title'); // replace w/ props
-  const [detail, setDetail] = useState(item.details); // replace w/ props
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const { state } = React.useContext(AuthContext);
 
-  const navigateBack = () => navigation.goBack();
+  const formatAppointmentTime = (start, end) =>
+    format(start, dateFormat) + ' to ' + format(end, dateFormat);
+  const [scheduleTime, setScheduleTime] = useState(
+    formatAppointmentTime(startDate, endDate),
+  );
+
+  const [title, setTitle] = useState(appointment.title); // replace w/ props
+  const [detail, setDetail] = useState(appointment.details); // replace w/ props
+  const [isApproved, setIsApproved] = useState(appointment.isApproved);
+
+  const navigateBack = () => {
+    route.params.onGoBack();
+    navigation.popToTop();
+  };
+  const navigateToHostSched = () => {
+    navigation.navigate('ProfSched', {
+      _id: appointment._host._id,
+      name: appointment._host.name,
+      onGoBack: (startHour, date) => {
+        const tmpStartDate = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          0,
+          0,
+          0,
+        );
+        const start = setHours(tmpStartDate, startHour);
+        const end = addHours(start, 1);
+        setStartDate(start);
+        setScheduleTime(formatAppointmentTime(start, end));
+      },
+      fromAppointmentDetailsScreen: true,
+    });
+  };
+
+  const saveAppointmentDetail = async () => {
+    try {
+      // console.log(startDate);
+      const response = await axios.patch(
+        `/users/${state.userId}/appointment/${appointment._id}/change`,
+        {
+          title: title,
+          details: detail,
+          isApproved: isApproved,
+          startDate: startDate.toISOString(),
+        },
+      );
+      if (response.status === 200) {
+        // console.log(response.data);
+        Toast.show('save', Toast.SHORT);
+      }
+    } catch (e) {
+      // console.log('in press save', e);
+    }
+  };
+
+  const deleteAppointment = async () => {
+    try {
+      const response = await axios.delete(
+        `/users/${state.userId}/appointment/${appointment._id}/cancel`);
+      if (response.status === 200) {
+        Toast.show('deleted', Toast.SHORT, ['UIAlertController']);
+      }
+    } catch (e) {
+      // console.log('in deleteappointment', e);
+    }
+  };
 
   const BackAction = (props) => (
     <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
   );
-
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
-
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
-
-  // TODO: retrieve selected date
-  // https://stackoverflow.com/questions/54740423/how-to-show-selected-date-and-time-in-textinput-in-react-native
-  const handleConfirm = (date) => {
-    console.log('A date has been picked: ', date);
-    startDate = date;
-    endDate = add(startDate, { hours: 1 });
-    setScheduleTime(
-      format(startDate, dateFormat) + ' to ' + format(endDate, dateFormat),
-    );
-    hideDatePicker();
-  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -66,24 +127,33 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
       />
       <Layout style={styling.form}>
         <Input value={title} onChangeText={(input) => setTitle(input)} />
-        <Text category={'h2'}>{item._host.name}</Text>
+        <Text category={'h2'}>
+          {state.userDetails._host
+            ? appointment._guest.name
+            : appointment._host.name}
+        </Text>
         <Button
-          onPress={() => showDatePicker()}
           style={{ margin: 2 }}
-          appearance="outline">
+          appearance="outline"
+          onPress={() => navigateToHostSched()}>
           {scheduleTime}
         </Button>
-        <DateTimePicker
-          isVisible={isDatePickerVisible}
-          mode="datetime"
-          onConfirm={handleConfirm}
-          onCancel={hideDatePicker}
-        />
         <Input
           value={detail}
           multiline={true}
+          textAlignVertical={'top'}
+          numberOfLines={3}
           onChangeText={(input) => setDetail(input)}
         />
+        {state.userDetails._host ? (
+          <Toggle
+            checked={isApproved}
+            onChange={(checked) => {
+              setIsApproved(checked);
+            }}>
+            APPROVED
+          </Toggle>
+        ) : null}
         <Layout
           style={{
             margin: 20,
@@ -93,12 +163,10 @@ const AppointmentDetailsScreen = ({ route, navigation }) => {
           }}>
           <Button
             style={{ margin: 20 }}
-            onPress={() => console.log('save pressed')}>
+            onPress={() => saveAppointmentDetail()}>
             SAVE
           </Button>
-          <Button
-            style={{ margin: 20 }}
-            onPress={() => console.log('cancel pressed')}>
+          <Button style={{ margin: 20 }} onPress={() => deleteAppointment()}>
             DELETE
           </Button>
         </Layout>
@@ -116,19 +184,8 @@ const styling = StyleSheet.create({
   form: {
     flex: 1,
     alignItems: 'stretch',
-    justifyContent: 'space-around',
-    // width: '80%',
-  },
-  // set width to fit text
-  buttonOuterLayout: {
-    flex: 1,
-    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    margin: 10,
-  },
-  buttonLayout: {
-    marginBottom: 10,
+    // width: '80%',
   },
 });
 

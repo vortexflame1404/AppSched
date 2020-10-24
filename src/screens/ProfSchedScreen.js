@@ -10,7 +10,7 @@ import {
 } from '@ui-kitten/components';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-simple-toast';
-import { addDays, parseISO } from 'date-fns';
+import { addDays, format, parseISO } from 'date-fns';
 import axios from 'axios';
 import WeekView from 'react-native-week-view';
 import { AuthContext } from '../navigations';
@@ -18,7 +18,17 @@ import { AuthContext } from '../navigations';
 const BackIcon = (props) => <Icon {...props} name="arrow-back" />;
 
 const ProfSchedScreen = ({ route, navigation }) => {
+  /// host example
+  const hostExample = {
+    _host: '5f8bb8a42a5f093f909889e0',
+    _id: '5f8bb8a42a5f093f909889e1',
+    email: 'dummyoffice2@example.org',
+    name: 'dummy office 2',
+  };
+  ///////////////////////////
+
   const host = route.params;
+  // console.log(route.params);
   const navigateBack = () => navigation.goBack();
   const { state } = React.useContext(AuthContext);
   const BackAction = (props) => (
@@ -30,7 +40,7 @@ const ProfSchedScreen = ({ route, navigation }) => {
   React.useEffect(() => {
     const fetchDisableEvents = async () => {
       const end = addDays(selectedDate, 5);
-      console.log('inside fetchDisableEvents');
+      // console.log('inside fetchDisableEvents');
       try {
         const response = await axios.get(
           `users/${state.userId}/unavailableTime/${host._id}`,
@@ -49,10 +59,10 @@ const ProfSchedScreen = ({ route, navigation }) => {
           event.endDate = parseISO(event.endDate);
           event.color = '#696969';
         });
-        console.log(tempDisableEvents);
+        // console.log(tempDisableEvents);
         setDisableEvents(tempDisableEvents);
       } catch (e) {
-        console.log('in fetchDisableEvents', e);
+        // console.log('in fetchDisableEvents', e);
       }
     };
     fetchDisableEvents();
@@ -60,28 +70,26 @@ const ProfSchedScreen = ({ route, navigation }) => {
 
   const onEventPress = ({ id, color, startDate, endDate, description }) => {
     if (color === '#696969') {
-      Toast.show("Can't choose this time period", Toast.SHORT, ['UIAlertController']);
-      return;
+      Toast.show("Can't choose this time period", Toast.SHORT, [
+        'UIAlertController',
+      ]);
     }
-    navigation.navigate('Detail', {
-      id: id,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      description: description,
-    });
-    console.log(color);
+    // console.log(description);
   };
 
-  const onGridClick = (pressEvent, startHour, date) => {
-    console.log(`start hour: ${startHour}`);
-    console.log(pressEvent instanceof Object);
-    console.log(startHour instanceof Number);
-    console.log(date instanceof Date);
-    if (startHour > 16 || startHour < 9) {
-      Toast.show('Outside of working hour', Toast.SHORT, ['UIAlertController']);
+  const onGridClick = (event, startHour, date) => {
+    // console.log(`start hour: ${startHour}`);
+    if (route.params.fromAppointmentDetailsScreen) {
+      // console.log('inside if');
+      route.params.onGoBack(startHour, date);
+      navigation.goBack();
       return;
     }
-    console.log('here');
+    navigation.navigate('NewAppointment', {
+      host: host,
+      startHour: startHour,
+      date: date.toISOString(),
+    });
   };
 
   // event object
@@ -109,18 +117,20 @@ const ProfSchedScreen = ({ route, navigation }) => {
           numberOfDays={5}
           hourTextStyle={{ color: '#000000' }}
           onEventPress={(event) => onEventPress(event)}
-          onGridClick={onGridClick}
+          onGridClick={(event, startHour, date) =>
+            onGridClick(event, startHour, date)
+          }
           headerStyle={style.headerStyle}
           formatDateHeader="MMM D"
           hoursInDisplay={6}
           startHour={9}
           onSwipeNext={(event) => {
             setSelectedDate(event);
-            console.log(event);
+            // console.log(event);
           }}
           onSwipePrev={(event) => {
             setSelectedDate(event);
-            console.log(event);
+            // console.log(event);
           }}
         />
       </Layout>

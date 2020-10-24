@@ -12,9 +12,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import NavLink from '../components/NavLink';
 import { AuthContext } from '../navigations';
 import { DismissKeyboard } from '../components/DismissKeyboard';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 
 const LoginScreen = ({ route, navigation }) => {
-  const { state, authContext } = React.useContext(AuthContext);
+  const { state, authContext, dispatch } = React.useContext(AuthContext);
   const [email, setEmail] = useState('student6@example.org');
   const [password, setPassword] = useState('student6');
 
@@ -22,7 +23,7 @@ const LoginScreen = ({ route, navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <Layout style={styling.form}>
         <Text category="h1">APP SCHED</Text>
-        {typeof state.errorMessage === 'string' ? (
+        {state.errorMessage.length === 0 ? (
           <Text category="h4" status="danger">
             {state.errorMessage}
           </Text>
@@ -45,11 +46,15 @@ const LoginScreen = ({ route, navigation }) => {
         <Divider style={{ margin: 10 }} />
         <Button
           onPress={() => {
-            console.log(email + '   ' + password);
+            // console.log(email + '   ' + password);
             authContext.signIn({ email, password });
           }}>
           SIGN IN
         </Button>
+        {state.isLoading ? <LoadingIndicator /> : null}
+        {state.errorMessage.length === 0 ? null : (
+          <Text status={'danger'}>{state.errorMessage}</Text>
+        )}
         <Divider style={{ margin: 20 }} />
         <NavLink
           routeName="Register"
@@ -71,16 +76,6 @@ const styling = StyleSheet.create({
   form: {
     flex: 1,
     alignItems: 'center',
-  },
-  // set width to fit text
-  buttonOuterLayout: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonLayout: {
-    marginBottom: 10,
   },
   indicator: {
     justifyContent: 'center',

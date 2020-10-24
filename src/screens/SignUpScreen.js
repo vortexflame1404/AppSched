@@ -13,20 +13,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import NavLink from '../components/NavLink';
 import { AuthContext } from '../navigations';
 import { DismissKeyboard } from '../components/DismissKeyboard';
-
-const LoadingIndicator = (props) => (
-  <View
-    style={[props.style, { justifyContent: 'center', alignItems: 'center' }]}>
-    <Spinner size={'medium'} />
-  </View>
-);
+import { LoadingIndicator } from '../components/LoadingIndicator';
 
 const SignUpScreen = ({ route, navigation }) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [selectedIndex, setSelectedIndex] = React.useState();
-  const { state, authContext } = useContext(AuthContext);
+  const { state, authContext, dispatch } = useContext(AuthContext);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -34,6 +28,7 @@ const SignUpScreen = ({ route, navigation }) => {
         {state.errorMessage ? (
           <Text status="danger">{state.errorMessage}</Text>
         ) : null}
+        <View style={{ padding: 20 }} />
         <DismissKeyboard>
           <Input
             value={name}
@@ -66,10 +61,10 @@ const SignUpScreen = ({ route, navigation }) => {
           onPress={() => {
             const host = selectedIndex === 0 ? null : true;
             authContext.signUp({ name, email, password, host });
-          }}
-          accessoryLeft={!state.userToken ? LoadingIndicator : null}>
+          }}>
           SIGN UP
         </Button>
+        {state.isLoading ? <LoadingIndicator /> : null}
         <NavLink
           routeName="Login"
           text="Already have an account? Login instead"
@@ -82,7 +77,6 @@ const SignUpScreen = ({ route, navigation }) => {
 const styling = StyleSheet.create({
   form: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
   },
 });

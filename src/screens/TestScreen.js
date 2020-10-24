@@ -1,10 +1,23 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Icon, Text, TopNavigation, TopNavigationAction } from '@ui-kitten/components';
 
-function TestScreen() {
+const BackIcon = (props) => <Icon {...props} name="arrow-back" />;
+
+function TestScreen({ route, navigation }) {
+  const navigateBack = () => navigation.goBack();
+
+  const BackAction = (props) => (
+    <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
+  );
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Test Screen</Text>
+      <TopNavigation
+        title="Test Screen"
+        alignment="center"
+        accessoryLeft={BackAction}
+      />
+      <Text category={'h1'}>Test Screen</Text>
     </View>
   );
 }

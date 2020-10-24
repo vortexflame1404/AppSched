@@ -12,26 +12,34 @@ import {
 } from '@ui-kitten/components';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
-import Toast from 'react-native-simple-toast';
 import { AuthContext } from '../navigations';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 
 const SearchScreen = ({ route, navigation }) => {
   const [searchInput, setSearchInput] = React.useState('');
   const [searchResults, setSearchResults] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState('');
   const { state } = React.useContext(AuthContext);
   const id = state.userId;
 
   const handleSearch = async (query) => {
     try {
+      setIsLoading(true);
+      setIsError('');
       const response = await axios.get(`users/${id}/search`, {
         params: {
           name: query,
         },
       });
       setSearchResults(response.data);
+      // console.log(response.data);
     } catch (e) {
-      console.log('error in host search', e.message);
+      // console.log('error in host search', e.message);
       setSearchResults([]);
+      setIsError('search failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -45,11 +53,11 @@ const SearchScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <TopNavigation title="Search" alignment="center"/>
-      <Divider style={{ borderColor: '#00008b' }}/>
+      <TopNavigation title="Search" alignment="center" />
+      <Divider style={{ borderColor: '#00008b' }} />
       <Layout style={styling.container}>
         <Text category="h3">Search Screen</Text>
-        <Divider style={{ borderColor: '#00008b', height: 30 }}/>
+        <Divider style={{ borderColor: '#00008b', height: 30 }} />
         <Input
           value={searchInput}
           onChangeText={(text) => setSearchInput(text)}
@@ -64,9 +72,15 @@ const SearchScreen = ({ route, navigation }) => {
             SEARCH
           </Button>
         </View>
+        {isError.length === 0 ? null : (
+          <View style={{ alignItems: 'center' }}>
+            <Text status={'danger'}>{isError}</Text>
+          </View>
+        )}
+        {isLoading ? <LoadingIndicator /> : null}
         {searchResults ? (
           <List
-            style={{ maxHeight: 300 }}
+            style={{ maxHeight: 280 }}
             data={searchResults}
             ItemSeparatorComponent={Divider}
             renderItem={renderItem}
@@ -82,7 +96,7 @@ const styling = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     alignItems: 'stretch',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
   },
 });
 

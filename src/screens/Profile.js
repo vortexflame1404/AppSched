@@ -13,13 +13,14 @@ import { AuthContext } from '../navigations';
 import Toast from 'react-native-simple-toast';
 import { DismissKeyboard } from '../components/DismissKeyboard';
 import AsyncStorage from '@react-native-community/async-storage';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 
 const Profile = (props) => {
   const { state, authContext } = React.useContext(AuthContext);
   const [email, setEmail] = React.useState(state.userDetails.email);
   const [name, setName] = React.useState(state.userDetails.name);
   const [password, setPassword] = React.useState('');
-  console.log(AsyncStorage.getItem('userToken'));
+  // console.log(AsyncStorage.getItem('userToken'));
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -49,20 +50,31 @@ const Profile = (props) => {
             onChangeText={(text) => setPassword(text)}
           />
         </DismissKeyboard>
-        <Button
-          onPress={() => {
-            console.log(typeof state.userDetails);
-            console.log(state.userDetails.name);
-            console.log(AsyncStorage.getAllKeys());
-            console.log(AsyncStorage.getItem('userId'));
-            console.log(AsyncStorage.getItem('userDetails'));
-            Toast.show('save modified', Toast.SHORT);
-          }}>
-          SAVE INFO
-        </Button>
-        <Button onPress={() => authContext.signOut({ id: state.userId, token: state.userToken })}>
-          SIGN OUT
-        </Button>
+        <View style={{ flexDirection: 'row' }}>
+          <Button
+            style={{ margin: 10 }}
+            onPress={() => {
+              authContext.modifyUser({
+                email: email,
+                password: password,
+                name: name,
+                id: state.userId,
+              });
+            }}>
+            SAVE INFO
+          </Button>
+          <Button
+            style={{ margin: 10 }}
+            onPress={() =>
+              authContext.signOut({ id: state.userId, token: state.userToken })
+            }>
+            SIGN OUT
+          </Button>
+        </View>
+        {state.isLoading ? <LoadingIndicator /> : null}
+        {state.errorMessage.length > 0 ? (
+          <Text status={'danger'}>{state.errorMessage}</Text>
+        ) : null}
       </Layout>
     </SafeAreaView>
   );
@@ -72,7 +84,7 @@ const styling = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   form: {
     flex: 1,

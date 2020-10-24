@@ -5437,10 +5437,10 @@ react-native-vector-icons@^7.0.0:
     prop-types "^15.7.2"
     yargs "^15.0.2"
 
-react-native-week-view@0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/react-native-week-view/-/react-native-week-view-0.0.16.tgz#581e928d3a855f4dc2fa1ab977ee149d436de0a1"
-  integrity sha512-s6aNboUysPtQQXTZ/+JHgHbua3kpOjvEzMSjHe6rUTuWnY49Kn7x+/PnvoSb4+4VZW7RvvShFf294liL9xhqVw==
+react-native-week-view@^0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/react-native-week-view/-/react-native-week-view-0.0.19.tgz#7f2e45cfbebc84b21982383c5665534182fab813"
+  integrity sha512-2w60S6Gc99XZhbPrwS+U6v5BEnrvmhTBlls6g7jO8XGiyHZ5DVBsO9X2Bdh6IYwGFsVCKG/M98l2AaOz2igrEw==
   dependencies:
     memoize-one "^5.1.1"
     moment "^2.19.3"
