@@ -1,2 +1,2 @@
 # AppSched
-Appointment Scheduling app
+client app AppSched
